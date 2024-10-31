@@ -179,7 +179,8 @@ class OSC_OT_OSCServer(bpy.types.Operator):
                     filter_eval = True
                     if item.filter_enable:
                         filter_eval = item.filter_eval
-                    if item.osc_direction != "OUTPUT" and item.enabled:
+
+                    elif item.osc_direction != "OUTPUT" and item.enabled:
                         if item.dp_format_enable == False:      
                             # make osc index into a tuple ..
                             oscIndex = make_tuple(item.osc_index)
@@ -189,8 +190,19 @@ class OSC_OT_OSCServer(bpy.types.Operator):
                             
                             try:
                                 oscHandleList = None
-                                if item.data_path.find('script(') == 0:
+
+                                # Phiz mocap
+                                if item.osc_direction == "PHIZIN":
+
+                                    if item.phiz_shape_target:
+                                        oscHandleList = self.get_oscHandleList(
+                                            12,
+                                            item,
+                                        )
+
+                                elif item.data_path.find('script(') == 0:
                                     raise Exception("using script() with format disabled is not allowed!")
+
                                 elif item.data_path.find('][') != -1 and (item.data_path[-2:] == '"]' or item.data_path[-2:] == '\']'):
                                     #For custom properties 
                                     #   like bpy.data.objects['Cube']['customProp']
@@ -479,6 +491,11 @@ class OSC_OT_OSCServer(bpy.types.Operator):
             obj_data_path = eval(item.data_path)
             prop = item.props
             prop_index = item.idx
+
+        elif message_type == 12:
+            obj_data_path = item.phiz_shape_target
+            if not item.osc_address:
+                item.osc_address = r"/phiz/blendshapes"
 
         oscHandleList = [
             message_type,
