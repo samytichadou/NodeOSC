@@ -19,6 +19,7 @@ def osc_export_config(scene):
             "loop_enable" : osc_item.loop_enable,
             "loop_range" : osc_item.loop_range,
             "enabled" : osc_item.enabled,
+            "keyframes": osc_item.record_keyframes,
         })
 
     return json.dumps(
@@ -45,6 +46,7 @@ def osc_import_config(scene, config_file):
         item.loop_enable = values["loop_enable"]
         item.loop_range = values["loop_range"]
         item.enabled = values["enabled"]
+        item.record_keyframes = values["keyframes"]
 
 def parse_ks(item):
     dp = item.data_path
