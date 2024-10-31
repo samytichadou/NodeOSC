@@ -24,6 +24,8 @@ class NodeOSCMsgValues(bpy.types.PropertyGroup):
         node_data_type: bpy.props.EnumProperty(name = "Node data type", default = "LIST", items = nodeDataTypeItems)
         node_type: bpy.props.IntProperty(name = "Node type", default = 0)
 
+        #record_keyframes: bpy.props.BoolProperty(name="Record keyframes")
+
 key_classes = (
     NodeOSCMsgValues,
 )

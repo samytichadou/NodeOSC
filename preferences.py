@@ -35,6 +35,8 @@ class NodeOSCEnvVarSettings(bpy.types.PropertyGroup):
     error: bpy.props.CollectionProperty(type = ErrorEntry)
     executionTimeInput: bpy.props.FloatProperty(name = "Input Execution Time")
     executionTimeOutput: bpy.props.FloatProperty(name = "Input Execution Time")
+
+    record_keyframes: bpy.props.BoolProperty(name="Record keyframes")
     
 class NodeOSCPreferences(AddonPreferences):
     # this must match the addon name, use '__package__'

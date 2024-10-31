@@ -36,6 +36,9 @@ class OSC_PT_Settings(bpy.types.Panel):
                 row.operator("nodeosc.pythonosc_operator", text='Start', icon='PLAY')
             row.prop(addon_prefs, "usePyLiblo", text = '', icon='CHECKBOX_HLT' if addon_prefs.usePyLiblo else 'CHECKBOX_DEHLT')
 
+            row.separator()
+            row.prop(envars, "record_keyframes", text="", icon="KEYTYPE_KEYFRAME_VEC")
+
             if envars.isUIExpanded:
                 col1 = col.column(align=True)
                 row1 = col1.row(align=True)
@@ -128,7 +131,8 @@ class OSC_PT_Operations(bpy.types.Panel):
                         
             sub2 = row.row()
             sub2.active = item.enabled
-            sub2.label(text=item.osc_address)
+            # sub2.label(text=item.osc_address)
+            sub2.label(text=item.name)
 
             submove = sub2.row(align=True)
             submove.operator("nodeosc.moveitem_up", icon='TRIA_UP', text='').index = index
@@ -149,6 +153,9 @@ class OSC_PT_Operations(bpy.types.Panel):
                 
                 colLabel = dataSplit.column(align = True)
                 colData = dataSplit.column(align = True)
+
+                colLabel.label(text='Name')
+                colData.prop(item,'name',text='')
                 
                 colLabel.label(text='address')
                 address_row = colData.row(align = True)
@@ -167,7 +174,7 @@ class OSC_PT_Operations(bpy.types.Panel):
                 colLabel.label(text='datapath')
                 datapath_row = colData.row(align = True)
                 datapath_row.prop(item, 'data_path',text='')
-                
+
                 if item.osc_direction == "INPUT":
                     datapath_row.prop(item, 'dp_format_enable',text='', icon='MODIFIER' if item.dp_format_enable else 'MODIFIER_DATA', 
                         emboss = False)
@@ -187,7 +194,11 @@ class OSC_PT_Operations(bpy.types.Panel):
                             emboss = False)
                         if item.loop_enable:
                             colLabel.label(text='')
-                            colData.prop(item,'loop_range',text='range')    
+                            colData.prop(item,'loop_range',text='range')
+
+                # if item.osc_direction == "INPUT":
+                #     row = colsub.row(align=True)
+                #     row.prop(item,'record_keyframes')
                                               
             index = index + 1
         

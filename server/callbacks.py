@@ -144,18 +144,66 @@ def OSC_callback_Property(address, data_path, prop, attrIdx, oscArgs, oscIndex):
             addedError.name = str(err)
             addedError.value = " > address: "+address + " | args: " + str(oscArgs) 
 
+# Keyframe handling
+def create_keyframe(obj, prop, value, index=0):
+    scn = bpy.context.scene
+
+    # No auto keyframing
+    if not scn.tool_settings.use_keyframe_insert_auto:
+        return False
+
+    # Fcurve
+    if not obj.animation_data:
+        obj.animation_data.create()
+    if not obj.animation_data.action:
+        action = bpy.data.actions.new(f"OSC_{obj}")
+        obj.animation_data.action = action
+
+    fcurve = None
+    action = obj.animation_data.action
+    fcurve = obj.animation_data.action.fcurves.find(prop, index=index)
+
+    if fcurve is None:
+        fcurve = action.fcurves.new(prop, index=index)
+
+    # Insert keyframe
+    new_key = fcurve.keyframe_points.insert(
+        scn.frame_current,
+        value,
+    )
+
+    return True
+
 # called by the queue execution thread
-def OSC_callback_IndexedProperty(address, data_path, prop, attrIdx, oscArgs, oscIndex):
+def OSC_callback_IndexedProperty(address, data_path, prop, attrIdx, oscArgs, oscIndex, keyframes=False):
+
+    anim = False
+
     try:
         if len(oscIndex) > 0:
             getattr(data_path,prop)[attrIdx] = oscArgs[oscIndex[0]]
+
+            # Keyframe if needed
+            if keyframes:
+                for i in oscIndex:
+                    anim = create_keyframe(data_path, prop, oscArgs[i], i)
+
         else:
             getattr(data_path,prop)[attrIdx] = oscArgs[0]
+
+            # Keyframe if needed
+            if keyframes:
+                anim = create_keyframe(data_path, prop, oscArgs)
+
+        if keyframes and anim:
+            for area in bpy.context.screen.areas:
+                area.tag_redraw()
+
     except TypeError as err:
         if bpy.context.scene.nodeosc_envars.message_monitor == True:
             addedError = bpy.context.scene.nodeosc_envars.error.add()
             addedError.name = "Message attribute invalid"
-            addedError.value = " > address: "+address + " " + str(oscArgs) + " " + str(err)      
+            addedError.value = " > address: "+address + " " + str(oscArgs) + " " + str(err)
     except IndexError as err:
         if bpy.context.scene.nodeosc_envars.message_monitor == True:
             addedError = bpy.context.scene.nodeosc_envars.error.add()
@@ -165,16 +213,33 @@ def OSC_callback_IndexedProperty(address, data_path, prop, attrIdx, oscArgs, osc
         if bpy.context.scene.nodeosc_envars.message_monitor == True:
             addedError = bpy.context.scene.nodeosc_envars.error.add()
             addedError.name = str(err)
-            addedError.value = " > address: "+address + " | args: " + str(oscArgs) 
+            addedError.value = " > address: "+address + " | args: " + str(oscArgs)
 
 # called by the queue execution thread
-def OSC_callback_properties(address, data_path, prop, attrIdx, oscArgs, oscIndex):
+def OSC_callback_properties(address, data_path, prop, attrIdx, oscArgs, oscIndex, keyframes=False):
+
+    anim = False
+
     try:
         if len(oscIndex) > 0:
             getattr(data_path, prop)[:] = (oscArgs[i] for i in oscIndex)
+
+            # Keyframe if needed
+            if keyframes:
+                for i in oscIndex:
+                    anim = create_keyframe(data_path, prop, oscArgs[i], i)
+
         else:
             getattr(data_path, prop)[:] = oscArgs
-            
+
+            # Keyframe if needed
+            if keyframes:
+                anim = create_keyframe(data_path, prop, oscArgs)
+
+        if keyframes and anim:
+            for area in bpy.context.screen.areas:
+                area.tag_redraw()
+
     except TypeError as err:
         if bpy.context.scene.nodeosc_envars.message_monitor == True:
             addedError = bpy.context.scene.nodeosc_envars.error.add()
@@ -424,6 +489,7 @@ def fillCallbackQue(address, args, dataList):
         myFormat = data[6]      # datapath format string
         myRange = data[7]       # loop range string
         myFilter = data[8]      # filter condition
+        keyframes = bpy.context.scene.nodeosc_envars.record_keyframes
 
         address_uniq = address + "_" + str(index)
         
@@ -434,7 +500,7 @@ def fillCallbackQue(address, args, dataList):
                 addr = [convertString(arrayElement) for arrayElement in address[1:].split('/')]
             myFilter = eval(myFilter)
         
-        if (myFilter == True):        
+        if (myFilter == True):
             if mytype == -1:
                 #special type reserved for message that triggers the execution of nodetrees
                 if nodeType == 1:
@@ -448,9 +514,9 @@ def fillCallbackQue(address, args, dataList):
             elif mytype == 2:
                 OSC_callback_queue.put((OSC_callback_Property, address_uniq, address, datapath, prop, attrIdx, args, oscIndex))
             elif mytype == 3:
-                OSC_callback_queue.put((OSC_callback_IndexedProperty, address_uniq, address, datapath, prop, attrIdx, args, oscIndex))
+                OSC_callback_queue.put((OSC_callback_IndexedProperty, address_uniq, address, datapath, prop, attrIdx, args, oscIndex, keyframes))
             elif mytype == 4:
-                OSC_callback_queue.put((OSC_callback_properties, address_uniq, address, datapath, prop, attrIdx, args, oscIndex))
+                OSC_callback_queue.put((OSC_callback_properties, address_uniq, address, datapath, prop, attrIdx, args, oscIndex, keyframes))
             elif mytype == 5:
                 OSC_callback_queue.put((OSC_callback_nodeFLOAT, address_uniq, address, datapath, prop, attrIdx, args, oscIndex))
             elif mytype == 6:
