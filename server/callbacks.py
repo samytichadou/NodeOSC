@@ -129,27 +129,47 @@ def OSC_callback_phiz_properties(address, data_path, oscArgs, keyframes=False, k
 
     ar_keys = utils.arkit_keys
 
-    idx = 0
-    for fl in oscArgs:
-        name = ar_keys[idx]
-        try:
-            # setattr(data_path.data.shape_keys.key_blocks, ar_keys[idx], fl)
-            data_path.data.shape_keys.key_blocks[name].value = fl
+    try:
 
-            # Keyframe if needed
-            if kf:
-                anim = data_path.data.shape_keys.key_blocks[name].keyframe_insert("value")
+        idx = 0
+        for fl in oscArgs:
+            name = ar_keys[idx]
+            try:
+                # setattr(data_path.data.shape_keys.key_blocks, ar_keys[idx], fl)
+                data_path.data.shape_keys.key_blocks[name].value = fl
 
-        except KeyError as err:
-            if bpy.context.scene.nodeosc_envars.message_monitor == True:
-                addedError = bpy.context.scene.nodeosc_envars.error.add()
-                addedError.name = "Message attribute invalid"
-                addedError.value = f" > address: {address} {name} {str(err)}"
-        idx += 1
+                # Keyframe if needed
+                if kf:
+                    # TODO Remove keyframe if existing
+                    anim = data_path.data.shape_keys.key_blocks[name].keyframe_insert("value")
 
-    if anim:
-        for area in bpy.context.screen.areas:
-            area.tag_redraw()
+            except KeyError as err:
+                if bpy.context.scene.nodeosc_envars.message_monitor == True:
+                    addedError = bpy.context.scene.nodeosc_envars.error.add()
+                    addedError.name = "Message attribute invalid"
+                    addedError.value = f" > address: {address} {name} {str(err)}"
+            idx += 1
+
+        if anim:
+            for area in bpy.context.screen.areas:
+                area.tag_redraw()
+
+    except TypeError as err:
+        if bpy.context.scene.nodeosc_envars.message_monitor == True:
+            addedError = bpy.context.scene.nodeosc_envars.error.add()
+            addedError.name = "Message attribute invalid"
+            addedError.value = " > address: "+address + " " + str(oscArgs) + " " + str(err)
+    except IndexError as err:
+        if bpy.context.scene.nodeosc_envars.message_monitor == True:
+            addedError = bpy.context.scene.nodeosc_envars.error.add()
+            addedError.name = "provided args[idx] out of range"
+            addedError.value = " > address: " + address + " | args: " + str(oscArgs)  + " | args[idx]: " + str(oscIndex)
+    except Exception as err:
+        if bpy.context.scene.nodeosc_envars.message_monitor == True:
+            addedError = bpy.context.scene.nodeosc_envars.error.add()
+            addedError.name = str(err)
+            addedError.value = " > address: "+address + " | args: " + str(oscArgs)
+
 
 # called by the queue execution thread
 def OSC_callback_Property(address, data_path, prop, attrIdx, oscArgs, oscIndex, keyframes=False, keyframes_scn=False):
@@ -188,6 +208,9 @@ def OSC_callback_Property(address, data_path, prop, attrIdx, oscArgs, oscIndex, 
 
 # Keyframe handling
 def create_keyframe(obj, prop, value, index=0):
+
+    # TODO Remove keyframe if existing
+
     scn = bpy.context.scene
 
     # No auto keyframing
