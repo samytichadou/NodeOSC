@@ -6,6 +6,11 @@ from bpy.props import StringProperty, IntProperty, BoolProperty
 def osc_export_config(scene):
     config_table = []
     for osc_item in scene.NodeOSC_keys:
+
+        phiz_target = ""
+        if osc_item.phiz_shape_target:
+            phiz_target = osc_item.phiz_shape_target.name
+
         config_table.append({
             "name": osc_item.name,
             "address": osc_item.osc_address,
@@ -20,6 +25,7 @@ def osc_export_config(scene):
             "loop_range" : osc_item.loop_range,
             "enabled" : osc_item.enabled,
             "keyframes": osc_item.record_keyframes,
+            "phiz_shape_target": phiz_target
         })
 
     return json.dumps(
@@ -47,6 +53,12 @@ def osc_import_config(scene, config_file):
         item.loop_range = values["loop_range"]
         item.enabled = values["enabled"]
         item.record_keyframes = values["keyframes"]
+
+        if values["phiz_shape_target"]:
+            try:
+                item.phiz_shape_target = bpy.data.objects[values["phiz_shape_target"]]
+            except KeyError:
+                print(f"NodesOSC --- {values['phiz_shape_target']} not found")
 
 def parse_ks(item):
     dp = item.data_path
