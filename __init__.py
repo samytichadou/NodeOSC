@@ -79,6 +79,7 @@ def unregister():
     operators.unregister()
     keys.unregister()
     preferences.unregister()
+    bpy.app.handlers.load_post.remove(nodeosc_handler)
 
 if __name__ == "__main__":
     register()
