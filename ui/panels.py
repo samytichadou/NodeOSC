@@ -212,9 +212,9 @@ class OSC_PT_Operations(bpy.types.Panel):
                                 colLabel.label(text='')
                                 colData.prop(item,'loop_range',text='range')
 
-                # if item.osc_direction in ["INPUT", "PHIZIN"]:
-                #     row = colsub.row(align=True)
-                #     row.prop(item,'record_keyframes')
+                if item.osc_direction in ["INPUT", "PHIZIN"]:
+                    row = colsub.row(align=True)
+                    row.prop(item,'record_keyframes')
                                               
             index = index + 1
         

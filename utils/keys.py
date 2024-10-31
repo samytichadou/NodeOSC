@@ -101,9 +101,11 @@ class NodeOSCMsgValues(bpy.types.PropertyGroup):
             name = "Phiz shape target",
             type=bpy.types.Object,
         )
-        # record_keyframes: bpy.props.BoolProperty(
-        #     name="Record keyframes",
-        # )
+
+        record_keyframes: bpy.props.BoolProperty(
+            name="Record keyframes",
+            default=True
+        )
 
 key_classes = (
     NodeOSCMsgValues,

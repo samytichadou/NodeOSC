@@ -122,12 +122,25 @@ def OSC_callback_custom(address, data_path, prop, attrIdx, oscArgs, oscIndex):
             addedError.value =  str(err) + " > address: "+address + " | args: " + str(oscArgs) 
 
 # called by the queue execution thread
-def OSC_callback_Property(address, data_path, prop, attrIdx, oscArgs, oscIndex):
+def OSC_callback_Property(address, data_path, prop, attrIdx, oscArgs, oscIndex, keyframes=False, keyframes_scn=False):
+
+    anim = False
+    kf = keyframes and keyframes_scn
+
     try:
         val = oscArgs[0]
         if len(oscIndex) > 0:
             val = oscArgs[oscIndex[0]]
         setattr(data_path,prop,val)
+
+        # Keyframe if needed
+        if kf:
+            if data_path.keyframe_insert(prop):
+
+                # Refresh viewport
+                for area in bpy.context.screen.areas:
+                    area.tag_redraw()
+
     except TypeError as err:
         if bpy.context.scene.nodeosc_envars.message_monitor == True:
             addedError = bpy.context.scene.nodeosc_envars.error.add()
@@ -175,27 +188,31 @@ def create_keyframe(obj, prop, value, index=0):
     return True
 
 # called by the queue execution thread
-def OSC_callback_IndexedProperty(address, data_path, prop, attrIdx, oscArgs, oscIndex, keyframes=False):
+def OSC_callback_IndexedProperty(address, data_path, prop, attrIdx, oscArgs, oscIndex, keyframes=False, keyframes_scn=False):
 
     anim = False
+    kf = keyframes and keyframes_scn
 
     try:
         if len(oscIndex) > 0:
             getattr(data_path,prop)[attrIdx] = oscArgs[oscIndex[0]]
 
             # Keyframe if needed
-            if keyframes:
+            if kf:
+                new_idx = 0
                 for i in oscIndex:
-                    anim = create_keyframe(data_path, prop, oscArgs[i], i)
+                    anim = create_keyframe(data_path, prop, oscArgs[i], new_idx)
+                    new_idx += 1
 
         else:
             getattr(data_path,prop)[attrIdx] = oscArgs[0]
 
             # Keyframe if needed
-            if keyframes:
+            if kf:
                 anim = create_keyframe(data_path, prop, oscArgs)
 
-        if keyframes and anim:
+        # Refresh viewport
+        if kf and anim:
             for area in bpy.context.screen.areas:
                 area.tag_redraw()
 
@@ -216,27 +233,31 @@ def OSC_callback_IndexedProperty(address, data_path, prop, attrIdx, oscArgs, osc
             addedError.value = " > address: "+address + " | args: " + str(oscArgs)
 
 # called by the queue execution thread
-def OSC_callback_properties(address, data_path, prop, attrIdx, oscArgs, oscIndex, keyframes=False):
+def OSC_callback_properties(address, data_path, prop, attrIdx, oscArgs, oscIndex, keyframes=False, keyframes_scn=False):
 
     anim = False
+    kf = keyframes and keyframes_scn
 
     try:
         if len(oscIndex) > 0:
             getattr(data_path, prop)[:] = (oscArgs[i] for i in oscIndex)
 
             # Keyframe if needed
-            if keyframes:
+            if kf:
+                new_idx = 0
                 for i in oscIndex:
-                    anim = create_keyframe(data_path, prop, oscArgs[i], i)
+                    anim = create_keyframe(data_path, prop, oscArgs[i], new_idx)
+                    new_idx += 1
 
         else:
             getattr(data_path, prop)[:] = oscArgs
 
             # Keyframe if needed
-            if keyframes:
+            if kf:
                 anim = create_keyframe(data_path, prop, oscArgs)
 
-        if keyframes and anim:
+        # Refresh viewport
+        if kf and anim:
             for area in bpy.context.screen.areas:
                 area.tag_redraw()
 
@@ -478,8 +499,11 @@ def OSC_callback_pyliblo(path, args, types, src, data):
 
 
 def fillCallbackQue(address, args, dataList):
+    scn = bpy.context.scene
+
     index = 0
     for data in dataList:
+        # print(data)
         mytype = data[0]        # callback type 
         datapath = data[1]      # blender datapath (i.e. bpy.data.objects['Cube'])
         prop = data[2]          # blender property (i.e. location)
@@ -489,7 +513,8 @@ def fillCallbackQue(address, args, dataList):
         myFormat = data[6]      # datapath format string
         myRange = data[7]       # loop range string
         myFilter = data[8]      # filter condition
-        keyframes = bpy.context.scene.nodeosc_envars.record_keyframes
+        myKeyframes = data[9]   # Record keyframes
+        keyframes_scn = scn.nodeosc_envars.record_keyframes
 
         address_uniq = address + "_" + str(index)
         
@@ -504,29 +529,145 @@ def fillCallbackQue(address, args, dataList):
             if mytype == -1:
                 #special type reserved for message that triggers the execution of nodetrees
                 if nodeType == 1:
-                    bpy.context.scene.nodeosc_AN_needsUpdate = True
+                    scn.nodeosc_AN_needsUpdate = True
                 elif nodeType == 2:
-                    bpy.context.scene.nodeosc_SORCAR_needsUpdate = True
+                    scn.nodeosc_SORCAR_needsUpdate = True
             elif mytype == 0:
-                OSC_callback_queue.put((OSC_callback_unkown, address_uniq, address, args))
+                OSC_callback_queue.put(
+                    (
+                        OSC_callback_unkown,
+                        address_uniq,
+                        address,
+                        args,
+                    ),
+                )
             elif mytype == 1:
-                OSC_callback_queue.put((OSC_callback_custom, address_uniq, address, datapath, prop, attrIdx, args, oscIndex))
+                OSC_callback_queue.put(
+                    (
+                        OSC_callback_custom,
+                        address_uniq,
+                        address,
+                        datapath,
+                        prop,
+                        attrIdx,
+                        args,
+                        oscIndex,
+                    ),
+                )
             elif mytype == 2:
-                OSC_callback_queue.put((OSC_callback_Property, address_uniq, address, datapath, prop, attrIdx, args, oscIndex))
+                OSC_callback_queue.put(
+                    (
+                        OSC_callback_Property,
+                        address_uniq,
+                        address,
+                        datapath,
+                        prop,
+                        attrIdx,
+                        args,
+                        oscIndex,
+                        myKeyframes,
+                        keyframes_scn,
+                    ),
+                )
             elif mytype == 3:
-                OSC_callback_queue.put((OSC_callback_IndexedProperty, address_uniq, address, datapath, prop, attrIdx, args, oscIndex, keyframes))
+                OSC_callback_queue.put(
+                    (
+                        OSC_callback_IndexedProperty,
+                        address_uniq,
+                        address,
+                        datapath,
+                        prop,
+                        attrIdx,
+                        args,
+                        oscIndex,
+                        myKeyframes,
+                        keyframes_scn,
+                    ),
+                )
             elif mytype == 4:
-                OSC_callback_queue.put((OSC_callback_properties, address_uniq, address, datapath, prop, attrIdx, args, oscIndex, keyframes))
+                OSC_callback_queue.put(
+                    (
+                        OSC_callback_properties,
+                        address_uniq,
+                        address,
+                        datapath,
+                        prop,
+                        attrIdx,
+                        args,
+                        oscIndex,
+                        myKeyframes,
+                        keyframes_scn,
+                    ),
+                )
             elif mytype == 5:
-                OSC_callback_queue.put((OSC_callback_nodeFLOAT, address_uniq, address, datapath, prop, attrIdx, args, oscIndex))
+                OSC_callback_queue.put(
+                    (
+                        OSC_callback_nodeFLOAT,
+                        address_uniq,
+                        address,
+                        datapath,
+                        prop,
+                        attrIdx,
+                        args,
+                        oscIndex,
+                    ),
+                )
             elif mytype == 6:
-                OSC_callback_queue.put((OSC_callback_nodeLIST, address_uniq, address, datapath, prop, attrIdx, args, oscIndex))
+                OSC_callback_queue.put(
+                    (
+                        OSC_callback_nodeLIST,
+                        address_uniq,
+                        address,
+                        datapath,
+                        prop,
+                        attrIdx,
+                        args,
+                        oscIndex,
+                    ),
+                )
             elif mytype == 7:
-                OSC_callback_queue.put((OSC_callback_function, address_uniq, address, datapath, prop, attrIdx, args, oscIndex))
+                OSC_callback_queue.put(
+                    (
+                        OSC_callback_function,
+                        address_uniq,
+                        address,
+                        datapath,
+                        prop,
+                        attrIdx,
+                        args,
+                        oscIndex,
+                    ),
+                )
             elif mytype == 10:
-                OSC_callback_queue.put((OSC_callback_format, address_uniq, address, datapath, prop, attrIdx, args, oscIndex, myFormat, myRange))
+                OSC_callback_queue.put(
+                    (
+                        OSC_callback_format,
+                        address_uniq,
+                        address,
+                        datapath,
+                        prop,
+                        attrIdx,
+                        args,
+                        oscIndex,
+                        myFormat,
+                        myRange,
+                    ),
+                )
             elif mytype == 11:
-                OSC_callback_queue.put((OSC_callback_script, address_uniq, address, datapath, prop, attrIdx, args, oscIndex, myFormat, myRange))
+                OSC_callback_queue.put(
+                    (
+                        OSC_callback_script,
+                        address_uniq,
+                        address,
+                        datapath,
+                        prop,
+                        attrIdx,
+                        args,
+                        oscIndex,
+                        myFormat,
+                        myRange,
+                    ),
+                )
 
             index += 1
             
