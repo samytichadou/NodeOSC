@@ -97,8 +97,8 @@ class NodeOSCMsgValues(bpy.types.PropertyGroup):
             default = 0,
         )
 
-        target_object: bpy.props.PointerProperty(
-            name = "Target Object",
+        phiz_shape_target: bpy.props.PointerProperty(
+            name = "Phiz shape target",
             type=bpy.types.Object,
         )
         # record_keyframes: bpy.props.BoolProperty(
