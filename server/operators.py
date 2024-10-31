@@ -7,6 +7,7 @@ def osc_export_config(scene):
     config_table = []
     for osc_item in scene.NodeOSC_keys:
         config_table.append({
+            "name": osc_item.name,
             "address": osc_item.osc_address,
             "data_path" : osc_item.data_path,
             "osc_type" : osc_item.osc_type,
@@ -20,7 +21,11 @@ def osc_export_config(scene):
             "enabled" : osc_item.enabled,
         })
 
-    return json.dumps(config_table)
+    return json.dumps(
+                config_table,
+                indent=4,
+                sort_keys=False,
+            )
 
 def osc_import_config(scene, config_file):
     config_table = json.load(config_file)
@@ -28,6 +33,7 @@ def osc_import_config(scene, config_file):
         print(values["address"])
         print(values)
         item = scene.NodeOSC_keys.add()
+        item.name = values["name"]
         item.osc_address = values["address"]
         item.data_path = values["data_path"]
         item.osc_type = values["osc_type"]
@@ -217,6 +223,13 @@ class OSC_Export(bpy.types.Operator):
     def execute(self, context):
         file = open(self.filepath, 'w')
         file.write(osc_export_config(context.scene))
+        # with open(self.filepath, "w") as write_file :
+        #     json.dump(
+        #         osc_export_config(context.scene),
+        #         write_file,
+        #         indent=4,
+        #         sort_keys=False,
+        #     )
         return {'FINISHED'}
 
     def invoke(self, context, event):
