@@ -4,7 +4,7 @@ dataDirectionItems = {
     ("INPUT", "Input", "Receive the OSC message from somewhere else", "IMPORT", 0),
     ("OUTPUT", "Output", "Send the OSC message from this node", "EXPORT", 1),
     ("BOTH", "Both", "Send and Reveive this OSC message", "FILE_REFRESH", 2),
-    ("PHIZOUT", "Phiz Output", "Receive OSC message from Phiz Mocap source", "MESH_MONKEY", 3),
+    ("PHIZIN", "Phiz Input", "Receive OSC message from Phiz Mocap source", "MESH_MONKEY", 3),
 }
 
 dataNodeDirectionItems = {
