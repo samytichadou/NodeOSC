@@ -131,8 +131,15 @@ class OSC_PT_Operations(bpy.types.Panel):
                         
             sub2 = row.row()
             sub2.active = item.enabled
-            # sub2.label(text=item.osc_address)
-            sub2.label(text=item.name)
+
+            if item.osc_direction == "PHIZIN":
+                if item.phiz_shape_target:
+                    name = item.phiz_shape_target.name
+                else:
+                    name = "Empty"
+                sub2.label(text=name)
+            else:
+                sub2.label(text=item.name)
 
             submove = sub2.row(align=True)
             submove.operator("nodeosc.moveitem_up", icon='TRIA_UP', text='').index = index
@@ -154,26 +161,34 @@ class OSC_PT_Operations(bpy.types.Panel):
                 colLabel = dataSplit.column(align = True)
                 colData = dataSplit.column(align = True)
 
-                colLabel.label(text='Name')
-                colData.prop(item,'name',text='')
-                
-                colLabel.label(text='address')
+                if item.osc_direction != "PHIZIN":
+                    colLabel.label(text='Name')
+                    colData.prop(item,'name',text='')
+
+                colLabel.label(text='Address')
+
                 address_row = colData.row(align = True)
                 address_row.prop(item, 'osc_address',text='', icon_only = True)
-                if item.osc_direction != "INPUT":
+
+                if item.osc_direction not in ["INPUT", "PHIZIN"]:
                     address_row.prop(item, 'filter_repetition',text='', icon='CHECKBOX_HLT' if item.filter_repetition else 'CHECKBOX_DEHLT', 
                         emboss = False)
-                if item.osc_direction != "OUTPUT":
+                if item.osc_direction not in ["OUTPUT", "PHIZIN"]:
                     address_row.prop(item, 'filter_enable',text='', icon='MODIFIER' if item.filter_enable else 'MODIFIER_DATA', 
                         emboss = False)
  
                 if item.filter_enable and item.osc_direction != "OUTPUT":
                     colLabel.label(text='')
                     colData.prop(item,'filter_eval',text='filter')   
-                             
-                colLabel.label(text='datapath')
-                datapath_row = colData.row(align = True)
-                datapath_row.prop(item, 'data_path',text='')
+
+                if item.osc_direction == "PHIZIN":
+                    colLabel.label(text='Target')
+                    colData.prop(item, 'phiz_shape_target',text='')
+
+                else:
+                    colLabel.label(text='Datapath')
+                    datapath_row = colData.row(align = True)
+                    datapath_row.prop(item, 'data_path',text='')
 
                 if item.osc_direction == "INPUT":
                     datapath_row.prop(item, 'dp_format_enable',text='', icon='MODIFIER' if item.dp_format_enable else 'MODIFIER_DATA', 
@@ -184,19 +199,20 @@ class OSC_PT_Operations(bpy.types.Panel):
                 if item.dp_format_enable and item.osc_direction == "INPUT":
                     colLabel.label(text='')
                     colData.prop(item,'dp_format',text='format')   
-               
-                if item.data_path.find('script(') == -1:
-                    colLabel.label(text='args[idx]')
-                    args_row = colData.row(align = True)
-                    args_row.prop(item, 'osc_index',text='')
-                    if item.dp_format_enable and item.osc_direction == "INPUT":
-                        args_row.prop(item, 'loop_enable',text='', icon='MODIFIER' if item.loop_enable else 'MODIFIER_DATA', 
-                            emboss = False)
-                        if item.loop_enable:
-                            colLabel.label(text='')
-                            colData.prop(item,'loop_range',text='range')
 
-                # if item.osc_direction == "INPUT":
+                if item.osc_direction != "PHIZIN":
+                    if item.data_path.find('script(') == -1:
+                        colLabel.label(text='args[idx]')
+                        args_row = colData.row(align = True)
+                        args_row.prop(item, 'osc_index',text='')
+                        if item.dp_format_enable and item.osc_direction == "INPUT":
+                            args_row.prop(item, 'loop_enable',text='', icon='MODIFIER' if item.loop_enable else 'MODIFIER_DATA',
+                                emboss = False)
+                            if item.loop_enable:
+                                colLabel.label(text='')
+                                colData.prop(item,'loop_range',text='range')
+
+                # if item.osc_direction in ["INPUT", "PHIZIN"]:
                 #     row = colsub.row(align=True)
                 #     row.prop(item,'record_keyframes')
                                               
