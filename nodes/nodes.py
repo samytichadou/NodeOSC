@@ -67,7 +67,7 @@ def nodes_createCollections():
     
     bpy.context.scene.NodeOSC_outputs.clear()
     for itemN in bpy.context.scene.NodeOSC_nodes:
-        if itemN.enabled and itemN.osc_direction != "INPUT":
+        if itemN.enabled and itemN.osc_direction in ["OUTPUT", "BOTH"]:
             item = bpy.context.scene.NodeOSC_outputs.add()
             item.data_path = itemN.data_path
             item.props = itemN.props
@@ -78,7 +78,7 @@ def nodes_createCollections():
             item.node_data_type = itemN.node_data_type
             item.node_type = itemN.node_type
     for itemN in bpy.context.scene.NodeOSC_keys:
-        if itemN.enabled and itemN.osc_direction != "INPUT":
+        if itemN.enabled and itemN.osc_direction in ["OUTPUT", "BOTH"]:
             item = bpy.context.scene.NodeOSC_outputs.add()
             item.data_path = itemN.data_path
             item.props = itemN.props
