@@ -112,7 +112,7 @@ class OSC_OT_ItemCreate(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.object is not None
+        return True
 
     def execute(self, context):
         #file = open(self.filepath, 'w')
@@ -163,7 +163,7 @@ class OSC_OT_ItemDelete(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.object is not None
+        return True
 
     def execute(self, context):
         #file = open(self.filepath, 'w')
@@ -192,7 +192,7 @@ class OSC_OT_ItemMoveUp(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.object is not None
+        return True
 
     def execute(self, context):
         return {'FINISHED'}
@@ -210,7 +210,7 @@ class OSC_OT_ItemMoveDown(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.object is not None
+        return True
 
     def execute(self, context):
         return {'FINISHED'}
@@ -232,7 +232,7 @@ class OSC_Export(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.object is not None
+        return True
 
     def execute(self, context):
         file = open(self.filepath, 'w')
@@ -264,7 +264,7 @@ class OSC_Import(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.object is not None
+        return True
 
     def execute(self, context):
         context.scene.NodeOSC_keys.clear()
