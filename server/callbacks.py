@@ -248,7 +248,7 @@ def create_keyframe(obj, prop, value, index=0):
                 prop,
                 index = index,
             )
-        except RuntimeError, TypeError:
+        except (RuntimeError, TypeError):
             print(f"NodeOSC --- Unable to remove keyframe : {data_path}-{index}")
 
     # Insert keyframe
