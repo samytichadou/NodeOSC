@@ -9,7 +9,7 @@ class NodeOSCMsgValues(bpy.types.PropertyGroup):
         # )
         osc_address: bpy.props.StringProperty(
             name="OSC Address",
-            default="/custom",
+            default="",
         )
         osc_type: bpy.props.StringProperty(
             name="Type",
