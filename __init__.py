@@ -59,7 +59,7 @@ def nodeosc_handler(scene):
 
 from . import preferences
 from .server import server, operators
-from .ui import panels
+from .ui import import_export, panels
 from .nodes import nodes
 from .utils import keys
 
@@ -67,6 +67,7 @@ def register():
     preferences.register()
     keys.register()
     operators.register()
+    import_export.register()
     panels.register()
     server.register()
     nodes.register()
@@ -75,6 +76,7 @@ def register():
 def unregister():
     nodes.unregister()
     server.unregister()
+    import_export.unregister()
     panels.unregister()
     operators.unregister()
     keys.unregister()

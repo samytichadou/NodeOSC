@@ -223,9 +223,9 @@ class OSC_OT_ItemMoveDown(bpy.types.Operator):
 #  Export OSC Settings                #
 #######################################
 
-class OSC_Export(bpy.types.Operator):
+class OSC_OT_export_config(bpy.types.Operator):
     """Export the current OSC configuration to a file in JSON format"""
-    bl_idname = "nodeosc.export"
+    bl_idname = "nodeosc.export_config"
     bl_label = "Export Config"
 
     filepath: bpy.props.StringProperty(subtype="FILE_PATH")
@@ -255,9 +255,9 @@ class OSC_Export(bpy.types.Operator):
 #  Import OSC Settings                #
 #######################################
 
-class OSC_Import(bpy.types.Operator):
+class OSC_OT_import_config(bpy.types.Operator):
     """Import OSC configuration from a file in JSON format"""
-    bl_idname = "nodeosc.import"
+    bl_idname = "nodeosc.import_config"
     bl_label = "Import Config"
 
     filepath: bpy.props.StringProperty(subtype="FILE_PATH")
@@ -508,8 +508,8 @@ def menu_func(self, context):
 
 op_classes = (
     PickOSCaddress,
-    OSC_Export,
-    OSC_Import,
+    OSC_OT_export_config,
+    OSC_OT_import_config,
     NodeOSC_ImportKS,
     OSC_OT_ItemDelete,
     OSC_OT_ItemMoveUp,

@@ -171,7 +171,6 @@ class OSC_PT_Operations(bpy.types.Panel):
                 colLabel = dataSplit.column(align = True)
                 colData = dataSplit.column(align = True)
 
-                # if item.osc_direction != "PHIZIN":
                 colLabel.label(text='Name')
                 colData.prop(item,'name',text='')
 
@@ -232,9 +231,6 @@ class OSC_PT_Operations(bpy.types.Panel):
 
         layout.separator()
 
-        row = layout.row(align=True)
-        row.operator("nodeosc.export", text='Export OSC Config')
-        row.operator("nodeosc.import", text='Import OSC Config')
         layout.operator("nodeosc.importks", text='Import Keying Set')
 
 #######################################
