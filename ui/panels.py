@@ -223,6 +223,12 @@ class OSC_PT_Operations(bpy.types.Panel):
 
                 if item.osc_direction in ["INPUT", "PHIZIN"]:
                     dataColumn.prop(item,'record_keyframes')
+
+                if item.osc_direction == "PHIZIN":
+                    row = dataColumn.row(align=True)
+                    row.label(text="", icon="MODIFIER")
+                    row.separator()
+                    row.operator("nodeosc.create_arkit_shapekeys", text="Create Shapekeys")
                                               
             index = index + 1
         

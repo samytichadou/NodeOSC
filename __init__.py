@@ -61,11 +61,12 @@ from . import preferences
 from .server import server, operators
 from .ui import import_export, panels
 from .nodes import nodes
-from .utils import keys
+from .utils import keys, arkit_utils
 
 def register():
     preferences.register()
     keys.register()
+    arkit_utils.register()
     operators.register()
     import_export.register()
     panels.register()
@@ -80,6 +81,7 @@ def unregister():
     panels.unregister()
     operators.unregister()
     keys.unregister()
+    arkit_utils.unregister()
     preferences.unregister()
     bpy.app.handlers.load_post.remove(nodeosc_handler)
 
