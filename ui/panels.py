@@ -116,7 +116,7 @@ class OSC_PT_Operations(bpy.types.Panel):
 
             col_box = col.column()
             box = col_box.box()
-            #box.enabled = not envars.isServerRunning
+
             colsub = box.column()
             row = colsub.row(align=True)
 
@@ -230,7 +230,7 @@ class OSC_PT_Operations(bpy.types.Panel):
                     row.separator()
                     row.operator("nodeosc.create_arkit_shapekeys", text="Create Shapekeys")
                                               
-            index = index + 1
+            index += 1
         
         row = layout.row()
         row.enabled = not envars.isServerRunning
