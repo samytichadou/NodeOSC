@@ -2,6 +2,7 @@ import bpy
 import json
 from bpy.types import Menu, Operator, AddonPreferences
 from bpy.props import StringProperty, IntProperty, BoolProperty
+from bpy_extras.io_utils import ExportHelper, ImportHelper
 
 def osc_export_config(scene):
     config_table = []
@@ -223,10 +224,13 @@ class OSC_OT_ItemMoveDown(bpy.types.Operator):
 #  Export OSC Settings                #
 #######################################
 
-class OSC_OT_export_config(bpy.types.Operator):
+class OSC_OT_export_config(bpy.types.Operator, ExportHelper):
     """Export the current OSC configuration to a file in JSON format"""
     bl_idname = "nodeosc.export_config"
-    bl_label = "Export Config"
+    bl_label = "Export Node OSC Config"
+    filename_ext = ".json"
+
+    filter_glob: StringProperty(default="*.json", options={'HIDDEN'})
 
     filepath: bpy.props.StringProperty(subtype="FILE_PATH")
 
@@ -237,28 +241,24 @@ class OSC_OT_export_config(bpy.types.Operator):
     def execute(self, context):
         file = open(self.filepath, 'w')
         file.write(osc_export_config(context.scene))
-        # with open(self.filepath, "w") as write_file :
-        #     json.dump(
-        #         osc_export_config(context.scene),
-        #         write_file,
-        #         indent=4,
-        #         sort_keys=False,
-        #     )
         return {'FINISHED'}
 
-    def invoke(self, context, event):
-        context.window_manager.fileselect_add(self)
-        return {'RUNNING_MODAL'}
+    # def invoke(self, context, event):
+    #     context.window_manager.fileselect_add(self)
+    #     return {'RUNNING_MODAL'}
 
 
 #######################################
 #  Import OSC Settings                #
 #######################################
 
-class OSC_OT_import_config(bpy.types.Operator):
+class OSC_OT_import_config(bpy.types.Operator, ImportHelper):
     """Import OSC configuration from a file in JSON format"""
     bl_idname = "nodeosc.import_config"
-    bl_label = "Import Config"
+    bl_label = "Import Node OSC Config"
+    filename_ext = ".json"
+
+    filter_glob: StringProperty(default="*.json", options={'HIDDEN'})
 
     filepath: bpy.props.StringProperty(subtype="FILE_PATH")
 
@@ -272,9 +272,9 @@ class OSC_OT_import_config(bpy.types.Operator):
         osc_import_config(context.scene, config_file)
         return {'FINISHED'}
 
-    def invoke(self, context, event):
-        context.window_manager.fileselect_add(self)
-        return {'RUNNING_MODAL'}
+    # def invoke(self, context, event):
+    #     context.window_manager.fileselect_add(self)
+    #     return {'RUNNING_MODAL'}
 
 class NodeOSC_ImportKS(Operator):
     bl_idname = "nodeosc.importks"
