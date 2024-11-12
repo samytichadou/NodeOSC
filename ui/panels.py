@@ -103,48 +103,58 @@ class OSC_PT_Operations(bpy.types.Panel):
     def draw(self, context):
         envars = bpy.context.scene.nodeosc_envars
         layout = self.layout
+
         if envars.isServerRunning == False:
             layout.label(text="Message handlers:")
         else:
             layout.label(text="Message handlers: (stop server for changes)")
+
         index = 0
         col = layout.column()
+
         for item in bpy.context.scene.NodeOSC_keys:
+
             col_box = col.column()
             box = col_box.box()
             #box.enabled = not envars.isServerRunning
             colsub = box.column()
             row = colsub.row(align=True)
 
-            row.prop(item, "ui_expanded", text = "", 
-                        icon='DISCLOSURE_TRI_DOWN' if item.ui_expanded else 'DISCLOSURE_TRI_RIGHT', 
+            row.prop(item, "ui_expanded", text = "",
+                        icon='DISCLOSURE_TRI_DOWN' if item.ui_expanded else 'DISCLOSURE_TRI_RIGHT',
                         emboss = False)
 
             sub1 = row.row()
             sub1.enabled = not envars.isServerRunning
-            sub1.prop(item, "enabled", text = "", 
-                        icon='CHECKBOX_HLT' if item.enabled else 'CHECKBOX_DEHLT', 
+            sub1.prop(item, "enabled", text = "",
+                        icon='CHECKBOX_HLT' if item.enabled else 'CHECKBOX_DEHLT',
                         emboss = False)
-            if item.osc_direction != 'INPUT' and item.dp_format_enable:
+
+            if item.osc_direction not in ['INPUT','PHIZIN'] and item.dp_format_enable:
                 sub1.label(icon='ERROR')
+
             sub1.prop(item, "osc_direction", text = "", emboss = False, icon_only = True)
-                        
+
             sub2 = row.row()
             sub2.active = item.enabled
 
-            if item.osc_direction == "PHIZIN":
-                if item.phiz_shape_target:
-                    name = item.phiz_shape_target.name
-                else:
-                    name = "Empty"
-                sub2.label(text=name)
-            else:
-                sub2.label(text=item.name)
+            # Display correct message name
+            name = "No Name"
+            if item.name:
+                name = item.name
+            elif item.osc_direction == "PHIZIN" and item.phiz_shape_target:
+                name = item.phiz_shape_target.name
+            elif item.osc_address:
+                name = item.osc_address
 
+            sub2.label(text=name)
+
+            # Move message
             submove = sub2.row(align=True)
             submove.operator("nodeosc.moveitem_up", icon='TRIA_UP', text='').index = index
             submove.operator("nodeosc.moveitem_down", icon='TRIA_DOWN', text = '').index = index
 
+            # Create copy or delete message
             subsub = sub2.row(align=True)
             if not envars.isServerRunning:
                 subsub.operator("nodeosc.createitem", icon='ADD', text='').copy = index
@@ -161,9 +171,9 @@ class OSC_PT_Operations(bpy.types.Panel):
                 colLabel = dataSplit.column(align = True)
                 colData = dataSplit.column(align = True)
 
-                if item.osc_direction != "PHIZIN":
-                    colLabel.label(text='Name')
-                    colData.prop(item,'name',text='')
+                # if item.osc_direction != "PHIZIN":
+                colLabel.label(text='Name')
+                colData.prop(item,'name',text='')
 
                 colLabel.label(text='Address')
 
