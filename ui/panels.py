@@ -232,10 +232,15 @@ class OSC_PT_Operations(bpy.types.Panel):
                                               
             index = index + 1
         
-        if envars.isServerRunning == False:
-            layout.operator("nodeosc.createitem", icon='PRESET_NEW', text='Create new message handler').copy = -1
+        row = layout.row()
+        row.enabled = not envars.isServerRunning
 
-        layout.separator()
+        op = row.operator(
+            "nodeosc.createitem",
+            icon='PRESET_NEW',
+            text='Create new message handler',
+        )
+        op.copy = -1
 
         layout.operator("nodeosc.importks", text='Import Keying Set')
 
