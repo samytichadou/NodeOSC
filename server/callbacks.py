@@ -140,7 +140,13 @@ def OSC_callback_phiz_properties(address, data_path, oscArgs, keyframes=False, k
 
                 # Keyframe if needed
                 if kf:
-                    # TODO Remove keyframe if existing
+
+                    # Remove kf if existing
+                    data_path.data.shape_keys.key_blocks[name].keyframe_delete(
+                        "value",
+                    )
+
+                    # Insert kf
                     anim = data_path.data.shape_keys.key_blocks[name].keyframe_insert("value")
 
             except KeyError as err:
@@ -184,6 +190,13 @@ def OSC_callback_Property(address, data_path, prop, attrIdx, oscArgs, oscIndex, 
 
         # Keyframe if needed
         if kf:
+
+            # Remove kf if existing
+            data_path.keyframe_delete(
+                prop,
+            )
+
+            # Insert new kf
             if data_path.keyframe_insert(prop):
 
                 # Refresh viewport
@@ -209,8 +222,6 @@ def OSC_callback_Property(address, data_path, prop, attrIdx, oscArgs, oscIndex, 
 # Keyframe handling
 def create_keyframe(obj, prop, value, index=0):
 
-    # TODO Remove keyframe if existing
-
     scn = bpy.context.scene
 
     # No auto keyframing
@@ -230,6 +241,15 @@ def create_keyframe(obj, prop, value, index=0):
 
     if fcurve is None:
         fcurve = action.fcurves.new(prop, index=index)
+    # Remove keyframe if existing
+    else:
+        try:
+            obj.keyframe_delete(
+                prop,
+                index = index,
+            )
+        except RuntimeError, TypeError:
+            print(f"NodeOSC --- Unable to remove keyframe : {data_path}-{index}")
 
     # Insert keyframe
     new_key = fcurve.keyframe_points.insert(
